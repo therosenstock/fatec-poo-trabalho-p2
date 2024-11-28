@@ -44,6 +44,7 @@ public class AlbumBoundary implements Tela{
         }
 
         BorderPane pane = new BorderPane();
+        pane.setStyle("-fx-background-color: #bd8292");
         GridPane grid = new GridPane();
 
         Button btnGravar = new Button("Gravar");
@@ -99,65 +100,68 @@ public class AlbumBoundary implements Tela{
     }
 
     public void gerarTabela(){
-        TableColumn<Album, Long> col1 = new TableColumn<>("Id");
-        col1.setCellValueFactory(new PropertyValueFactory<Album, Long>("id"));
+        if (tableView.getColumns().isEmpty()) {
+            TableColumn<Album, Long> col1 = new TableColumn<>("Id");
+            col1.setCellValueFactory(new PropertyValueFactory<Album, Long>("id"));
 
-        TableColumn<Album, String> col2 = new TableColumn<>("Título");
-        col2.setCellValueFactory(new PropertyValueFactory<Album, String>("titulo"));
+            TableColumn<Album, String> col2 = new TableColumn<>("Título");
+            col2.setCellValueFactory(new PropertyValueFactory<Album, String>("titulo"));
 
-        TableColumn<Album, String> col3 = new TableColumn<>("Artista/Banda");
-        col3.setCellValueFactory(new PropertyValueFactory<Album, String>("artista"));
+            TableColumn<Album, String> col3 = new TableColumn<>("Artista/Banda");
+            col3.setCellValueFactory(new PropertyValueFactory<Album, String>("artista"));
 
-        TableColumn<Album, String> col4 = new TableColumn<>("Gênero");
-        col4.setCellValueFactory(new PropertyValueFactory<Album, String>("genero"));
+            TableColumn<Album, String> col4 = new TableColumn<>("Gênero");
+            col4.setCellValueFactory(new PropertyValueFactory<Album, String>("genero"));
 
-        TableColumn<Album, LocalDate> col5 = new TableColumn<>("Data de Lançamento");
-        col5.setCellValueFactory(new PropertyValueFactory<Album, LocalDate>("data_lancamento"));
+            TableColumn<Album, LocalDate> col5 = new TableColumn<>("Data de Lançamento");
+            col5.setCellValueFactory(new PropertyValueFactory<Album, LocalDate>("data_lancamento"));
 
-        TableColumn<Album, Integer> col6 = new TableColumn<>("Número de Faixas");
-        col6.setCellValueFactory(new PropertyValueFactory<Album, Integer>("numero_faixas"));
+            TableColumn<Album, Integer> col6 = new TableColumn<>("Número de Faixas");
+            col6.setCellValueFactory(new PropertyValueFactory<Album, Integer>("numero_faixas"));
 
-        tableView.getSelectionModel().selectedItemProperty().addListener(
-                (obs, antigo, novo) -> {
-                    if(novo != null){
-                        control.paraTela(novo);
+            tableView.getSelectionModel().selectedItemProperty().addListener(
+                    (obs, antigo, novo) -> {
+                        if (novo != null) {
+                            control.paraTela(novo);
+                        }
                     }
-                }
-        );
-        Callback<TableColumn<Album, Void>, TableCell<Album, Void>> cb =
-                new Callback<>() {
-                    @Override
-                    public TableCell<Album, Void> call(TableColumn<Album, Void> param) {
-                        TableCell<Album, Void> celula = new TableCell<>() {
-                            final Button btnApagar = new Button("Apagar");
-                            {
-                                btnApagar.setOnAction(e -> {
-                                    Album album = tableView.getItems().get(getIndex());
-                                    try {
-                                        control.excluir(album);
-                                    } catch (MusicaException err) {
-                                        new Alert(Alert.AlertType.ERROR, "Erro ao excluir o álbum selecionado", ButtonType.OK).showAndWait();
-                                    }
-                                });
-                            }
+            );
+            Callback<TableColumn<Album, Void>, TableCell<Album, Void>> cb =
+                    new Callback<>() {
+                        @Override
+                        public TableCell<Album, Void> call(TableColumn<Album, Void> param) {
+                            TableCell<Album, Void> celula = new TableCell<>() {
+                                final Button btnApagar = new Button("Apagar");
 
-                            @Override
-                            protected void updateItem(Void item, boolean empty) {
-                                if(!empty){
-                                    setGraphic(btnApagar);
-                                } else{
-                                    setGraphic(null);
+                                {
+                                    btnApagar.setOnAction(e -> {
+                                        Album album = tableView.getItems().get(getIndex());
+                                        try {
+                                            control.excluir(album);
+                                        } catch (MusicaException err) {
+                                            new Alert(Alert.AlertType.ERROR, "Erro ao excluir o álbum selecionado", ButtonType.OK).showAndWait();
+                                        }
+                                    });
                                 }
-                            }
-                        };
-                        return celula;
-                    }
-                };
 
-        TableColumn<Album, Void> col7 = new TableColumn<>("Ação");
-        col7.setCellFactory(cb);
+                                @Override
+                                protected void updateItem(Void item, boolean empty) {
+                                    if (!empty) {
+                                        setGraphic(btnApagar);
+                                    } else {
+                                        setGraphic(null);
+                                    }
+                                }
+                            };
+                            return celula;
+                        }
+                    };
 
-        tableView.getColumns().addAll(col1, col2, col3, col4, col5, col6, col7);
+            TableColumn<Album, Void> col7 = new TableColumn<>("Ação");
+            col7.setCellFactory(cb);
+
+            tableView.getColumns().addAll(col1, col2, col3, col4, col5, col6, col7);
+        }
         tableView.setItems(control.getLista());
 
     }

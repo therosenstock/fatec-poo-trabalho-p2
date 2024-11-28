@@ -4,6 +4,7 @@ import edu.curso.control.AlbumControl;
 import edu.curso.control.MusicaException;
 import edu.curso.control.PlaylistControl;
 import edu.curso.model.Playlist;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
@@ -13,6 +14,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.util.Callback;
+import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.time.LocalDate;
 
@@ -38,6 +41,7 @@ public class PlaylistBoundary implements Tela{
         }
 
         BorderPane pane = new BorderPane();
+        pane.setStyle("-fx-background-color: #a868ad");
         GridPane grid = new GridPane();
 
         Button btnGravar = new Button("Gravar");
@@ -85,6 +89,7 @@ public class PlaylistBoundary implements Tela{
 
         grid.setVgap(10);
         grid.setHgap(10);
+        comunicacaoControle();
         gerarTabela();
         pane.setTop(grid);
         pane.setCenter(tableView);
@@ -92,71 +97,84 @@ public class PlaylistBoundary implements Tela{
     }
 
     public void gerarTabela(){
-        TableColumn<Playlist, Long> col1 = new TableColumn<>("Id");
-        col1.setCellValueFactory(new PropertyValueFactory<Playlist, Long>("id"));
+        if (tableView.getColumns().isEmpty()) {
+            TableColumn<Playlist, Long> col1 = new TableColumn<>("Id");
+            col1.setCellValueFactory(new PropertyValueFactory<Playlist, Long>("id"));
 
-        TableColumn<Playlist, String> col2 = new TableColumn<>("Nome da Playlist");
-        col2.setCellValueFactory(new PropertyValueFactory<Playlist, String>("nome"));
+            TableColumn<Playlist, String> col2 = new TableColumn<>("Nome da Playlist");
+            col2.setCellValueFactory(new PropertyValueFactory<Playlist, String>("nome"));
 
-        TableColumn<Playlist, String> col3 = new TableColumn<>("Descrição");
-        col3.setCellValueFactory(new PropertyValueFactory<Playlist, String>("descricao"));
+            TableColumn<Playlist, String> col3 = new TableColumn<>("Descrição");
+            col3.setCellValueFactory(new PropertyValueFactory<Playlist, String>("descricao"));
 
-        TableColumn<Playlist, LocalDate> col4 = new TableColumn<>("Data de criação");
-        col4.setCellValueFactory(new PropertyValueFactory<Playlist, LocalDate>("dataCriacao"));
+            TableColumn<Playlist, LocalDate> col4 = new TableColumn<>("Data de criação");
+            col4.setCellValueFactory(new PropertyValueFactory<Playlist, LocalDate>("dataCriacao"));
 
-        TableColumn<Playlist, Integer> col5 = new TableColumn<>("Qtde de músicas");
-        col5.setCellValueFactory(new PropertyValueFactory<Playlist, Integer>("quantidade_musica"));
+            TableColumn<Playlist, Integer> col5 = new TableColumn<>("Qtde de músicas");
+            col5.setCellValueFactory(new PropertyValueFactory<Playlist, Integer>("quantidade_musica"));
 
-        TableColumn<Playlist, String> col6 = new TableColumn<>("Criador da Playlist");
-        col6.setCellValueFactory(new PropertyValueFactory<Playlist, String>("criador_playlist"));
+            TableColumn<Playlist, String> col6 = new TableColumn<>("Criador da Playlist");
+            col6.setCellValueFactory(new PropertyValueFactory<Playlist, String>("criador_playlist"));
 
-        tableView.getSelectionModel().selectedItemProperty().addListener(
-                (obs, antigo, novo) -> {
-                    if(novo != null){
-                        control.paraTela(novo);
+            tableView.getSelectionModel().selectedItemProperty().addListener(
+                    (obs, antigo, novo) -> {
+                        if (novo != null) {
+                            control.paraTela(novo);
+                        }
                     }
-                }
-        );
-        Callback<TableColumn<Playlist, Void>, TableCell<Playlist, Void>> cb =
-                new Callback<>() {
-                    @Override
-                    public TableCell<Playlist, Void> call(TableColumn<Playlist, Void> param) {
-                        TableCell<Playlist, Void> celula = new TableCell<>() {
-                            final Button btnApagar = new Button("Apagar");
-                            {
-                                btnApagar.setOnAction(e -> {
-                                    Playlist play = tableView.getItems().get(getIndex());
-                                    try{
-                                        control.excluir(play);
-                                    } catch(MusicaException err){
-                                        new Alert(Alert.AlertType.ERROR, "Erro ao excluir a playlist selecionada");
-                                    }
-                                });
-                            }
+            );
+            Callback<TableColumn<Playlist, Void>, TableCell<Playlist, Void>> cb =
+                    new Callback<>() {
+                        @Override
+                        public TableCell<Playlist, Void> call(TableColumn<Playlist, Void> param) {
+                            TableCell<Playlist, Void> celula = new TableCell<>() {
+                                final Button btnApagar = new Button("Apagar");
 
-                            @Override
-                            protected void updateItem(Void item, boolean empty) {
-                                if(!empty){
-                                    setGraphic(btnApagar);
-                                } else{
-                                    setGraphic(null);
+                                {
+                                    btnApagar.setOnAction(e -> {
+                                        Playlist play = tableView.getItems().get(getIndex());
+                                        try {
+                                            control.excluir(play);
+                                        } catch (MusicaException err) {
+                                            new Alert(Alert.AlertType.ERROR, "Erro ao excluir a playlist selecionada");
+                                        }
+                                    });
                                 }
-                            }
-                        };
-                        return celula;
-                    }
-                };
 
-        TableColumn<Playlist, Void> col7 = new TableColumn<>("Ação");
-        col7.setCellFactory(cb);
+                                @Override
+                                protected void updateItem(Void item, boolean empty) {
+                                    if (!empty) {
+                                        setGraphic(btnApagar);
+                                    } else {
+                                        setGraphic(null);
+                                    }
+                                }
+                            };
+                            return celula;
+                        }
+                    };
 
-        tableView.getColumns().addAll(col1, col2, col3, col4, col5, col6, col7);
+            TableColumn<Playlist, Void> col7 = new TableColumn<>("Ação");
+            col7.setCellFactory(cb);
+
+            tableView.getColumns().addAll(col1, col2, col3, col4, col5, col6, col7);
+        }
         tableView.setItems(control.getLista());
 
     }
 
     public void comunicacaoControle(){
-        control.idProperty().add
+        control.idProperty().addListener(
+                (obs, antigo, novo) -> {
+                    lblId.setText(String.valueOf(novo));
+                });
+        IntegerStringConverter integerConverter = new IntegerStringConverter();
+        Bindings.bindBidirectional(control.nomeProperty(), txtNome.textProperty());
+        Bindings.bindBidirectional(control.descricaoProperty(), txtDescricao.textProperty());
+        Bindings.bindBidirectional(control.criadorPlaylistProperty(), txtCriador.textProperty());
+        Bindings.bindBidirectional(txtQuantidadeMusica.textProperty(), control.quantidadeMusicaProperty(), (StringConverter) integerConverter );
+        Bindings.bindBidirectional(control.dataCriacaoProperty(), dataCriacao.valueProperty());
+
     }
 
     public static ObservableList<Playlist> getPlaylists() {

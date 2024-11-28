@@ -71,6 +71,7 @@ public class PlaylistControl {
             playlistDAO.atualizar(p);
         }
         pesquisarTodos();
+        limparTudo();
     }
 
     public void pesquisar() throws MusicaException {

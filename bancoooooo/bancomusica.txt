@@ -1,0 +1,37 @@
+
+CREATE DATABASE musicadb;
+
+USE musicadb;
+
+CREATE TABLE playlist (
+    id INT AUTO_INCREMENT NOT NULL,
+    nome VARCHAR(100),
+    descricao VARCHAR(255),
+    data_criacao DATE,
+    quantidade_musica INT,
+    criador_playlist VARCHAR(100),
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE album (
+  id INT AUTO_INCREMENT NOT NULL,
+  titulo VARCHAR (255),
+  artista VARCHAR(255),
+  genero VARCHAR(100),
+  data_lancamento DATE,
+  numero_faixas INT,
+  PRIMARY KEY(id)
+);
+
+
+select * from album;
+
+INSERT INTO playlist (nome, descricao, data_criacao, quantidade_musica, criador_playlist) VALUES
+('Chill Vibes', 'Playlist para relaxar.', '2023-06-15', 15, 'Carlos'),
+('Rock Classics', 'Os melhores clássicos do rock.', '2022-09-10', 25, 'Ana'),
+('Workout Tunes', 'Músicas energéticas para treinar.', '2023-02-20', 20, 'Maria');
+
+INSERT INTO album (titulo, artista, genero, data_lancamento, numero_faixas) VALUES
+('Hybrid Theory', 'Linkin Park', 'Nu Metal', '2000-10-24', 12),
+('Meteora', 'Linkin Park', 'Nu Metal', '2003-03-25', 13),
+('Minutes to Midnight', 'Linkin Park', 'Rock', '2007-05-14', 12);
