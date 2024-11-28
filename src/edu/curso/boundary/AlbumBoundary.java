@@ -1,6 +1,9 @@
 package edu.curso.boundary;
 
+import edu.curso.control.AlbumControl;
+import edu.curso.control.MusicaException;
 import edu.curso.model.Album;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -13,6 +16,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.text.Font;
 import javafx.util.Callback;
+import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
+import javafx.util.converter.NumberStringConverter;
 
 import java.time.LocalDate;
 
@@ -26,15 +32,39 @@ public class AlbumBoundary implements Tela{
 
     private TableView<Album> tableView = new TableView<>();
 
+    private AlbumControl control = null;
+
     @Override
     public Pane render() {
+        try{
+            control = new AlbumControl();
+            control.pesquisarTodos();
+        } catch(MusicaException e){
+            new Alert(Alert.AlertType.ERROR, "Erro ao iniciar o banco de dados", ButtonType.OK).showAndWait();
+        }
 
         BorderPane pane = new BorderPane();
         GridPane grid = new GridPane();
 
         Button btnGravar = new Button("Gravar");
+        btnGravar.setOnAction(e -> {
+            try{
+                control.gravar();
+            } catch(MusicaException err){
+                new Alert(Alert.AlertType.ERROR, "Erro ao gravar o álbum", ButtonType.OK).showAndWait();
+            }
+            tableView.refresh();
+        });
         Button btnPesquisar = new Button("Pesquisar");
+        btnPesquisar.setOnAction(e -> {
+            try{
+                control.pesquisar();
+            } catch(MusicaException err){
+                new Alert(Alert.AlertType.ERROR, "Erro ao pesquisar por nome", ButtonType.OK).showAndWait();
+            }
+        });
         Button btnNovo = new Button("*");
+        btnNovo.setOnAction( e -> control.limparTudo() );
 
         Label titleLabel = new Label("CRUD de Álbuns");
         titleLabel.setFont(new Font(20));
@@ -50,7 +80,7 @@ public class AlbumBoundary implements Tela{
         grid.add(txtArtista, 2, 3);
         grid.add(new Label("Gênero: "), 1, 4);
         grid.add(txtGenero, 2, 4);
-        grid.add(new Label("Ano de Lançamento: "), 1, 5);
+        grid.add(new Label("Data de Lançamento: "), 1, 5);
         grid.add(txtLancamento, 2, 5);
         grid.add(new Label("Número de faixas: "), 1, 6);
         grid.add(txtNumeroFaixas, 2, 6);
@@ -61,6 +91,7 @@ public class AlbumBoundary implements Tela{
         grid.setVgap(10);
         grid.setHgap(10);
 
+        comunicacaoControle();
         gerarTabela();
         pane.setTop(grid);
         pane.setCenter(tableView);
@@ -86,6 +117,13 @@ public class AlbumBoundary implements Tela{
         TableColumn<Album, Integer> col6 = new TableColumn<>("Número de Faixas");
         col6.setCellValueFactory(new PropertyValueFactory<Album, Integer>("numero_faixas"));
 
+        tableView.getSelectionModel().selectedItemProperty().addListener(
+                (obs, antigo, novo) -> {
+                    if(novo != null){
+                        control.paraTela(novo);
+                    }
+                }
+        );
         Callback<TableColumn<Album, Void>, TableCell<Album, Void>> cb =
                 new Callback<>() {
                     @Override
@@ -95,7 +133,11 @@ public class AlbumBoundary implements Tela{
                             {
                                 btnApagar.setOnAction(e -> {
                                     Album album = tableView.getItems().get(getIndex());
-                                    //trycatch
+                                    try {
+                                        control.excluir(album);
+                                    } catch (MusicaException err) {
+                                        new Alert(Alert.AlertType.ERROR, "Erro ao excluir o álbum selecionado", ButtonType.OK).showAndWait();
+                                    }
                                 });
                             }
 
@@ -116,7 +158,7 @@ public class AlbumBoundary implements Tela{
         col7.setCellFactory(cb);
 
         tableView.getColumns().addAll(col1, col2, col3, col4, col5, col6, col7);
-        tableView.setItems(getAlbumList());
+        tableView.setItems(control.getLista());
 
     }
     public static ObservableList<Album> getAlbumList() {
@@ -124,6 +166,19 @@ public class AlbumBoundary implements Tela{
                 new Album(1, "Abbey Road", "The Beatles", "Rock", LocalDate.of(1969, 9, 26), 17),
                 new Album(2, "Thriller", "Michael Jackson", "Pop", LocalDate.of(1982, 11, 30), 9)
         );
+    }
+
+    public void comunicacaoControle(){
+        control.idProperty().addListener((obs, antigo, novo) -> {
+            lblId.setText(String.valueOf(novo));
+        });
+
+        IntegerStringConverter integerConverter = new IntegerStringConverter();
+        Bindings.bindBidirectional(control.tituloProperty(), txtTitulo.textProperty());
+        Bindings.bindBidirectional(control.artistaProperty(), txtArtista.textProperty());
+        Bindings.bindBidirectional(control.generoProperty(), txtGenero.textProperty());
+        Bindings.bindBidirectional(control.dataLancamentoProperty(), txtLancamento.valueProperty());
+        Bindings.bindBidirectional(txtNumeroFaixas.textProperty(), control.numeroFaixasProperty(), (StringConverter) integerConverter);
     }
 
 }

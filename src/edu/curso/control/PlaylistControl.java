@@ -61,7 +61,8 @@ public class PlaylistControl {
         criadorPlaylist.set("");
     }
 
-    public void gravar(Playlist p) throws MusicaException {
+    public void gravar() throws MusicaException {
+        Playlist p = paraEntidade();
         if (p.getId() == 0) {
             this.contador += 1;
             p.setId(this.contador);

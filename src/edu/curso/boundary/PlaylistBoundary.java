@@ -1,5 +1,8 @@
 package edu.curso.boundary;
 
+import edu.curso.control.AlbumControl;
+import edu.curso.control.MusicaException;
+import edu.curso.control.PlaylistControl;
 import edu.curso.model.Playlist;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -23,15 +26,39 @@ public class PlaylistBoundary implements Tela{
 
     private TableView<Playlist> tableView = new TableView<>();
 
+    private PlaylistControl control = null;
+
     @Override
     public Pane render() {
+        try{
+            control = new PlaylistControl();
+            control.pesquisarTodos();
+        } catch(MusicaException e){
+            new Alert(Alert.AlertType.ERROR, "Erro ao iniciar o banco de dados", ButtonType.OK).showAndWait();
+        }
 
         BorderPane pane = new BorderPane();
         GridPane grid = new GridPane();
 
         Button btnGravar = new Button("Gravar");
+        btnGravar.setOnAction(e -> {
+            try{
+                control.gravar();
+            } catch(MusicaException err){
+                new Alert(Alert.AlertType.ERROR, "Erro ao gravar a playlist", ButtonType.OK).showAndWait();
+            }
+            tableView.refresh();
+        });
         Button btnPesquisar = new Button("Pesquisar");
+        btnPesquisar.setOnAction(e -> {
+            try{
+                control.pesquisar();
+            } catch(MusicaException err){
+                new Alert(Alert.AlertType.ERROR, "Erro ao pesquisar por nome", ButtonType.OK).showAndWait();
+            }
+        });
         Button btnNovo = new Button("*");
+        btnNovo.setOnAction( e -> control.limparTudo() );
 
         Label titleLabel = new Label("CRUD de Playlists");
         titleLabel.setFont(new Font(20));
@@ -83,6 +110,13 @@ public class PlaylistBoundary implements Tela{
         TableColumn<Playlist, String> col6 = new TableColumn<>("Criador da Playlist");
         col6.setCellValueFactory(new PropertyValueFactory<Playlist, String>("criador_playlist"));
 
+        tableView.getSelectionModel().selectedItemProperty().addListener(
+                (obs, antigo, novo) -> {
+                    if(novo != null){
+                        control.paraTela(novo);
+                    }
+                }
+        );
         Callback<TableColumn<Playlist, Void>, TableCell<Playlist, Void>> cb =
                 new Callback<>() {
                     @Override
@@ -91,8 +125,12 @@ public class PlaylistBoundary implements Tela{
                             final Button btnApagar = new Button("Apagar");
                             {
                                 btnApagar.setOnAction(e -> {
-                                    Playlist Playlist = tableView.getItems().get(getIndex());
-                                    //trycatch
+                                    Playlist play = tableView.getItems().get(getIndex());
+                                    try{
+                                        control.excluir(play);
+                                    } catch(MusicaException err){
+                                        new Alert(Alert.AlertType.ERROR, "Erro ao excluir a playlist selecionada");
+                                    }
                                 });
                             }
 
@@ -113,9 +151,12 @@ public class PlaylistBoundary implements Tela{
         col7.setCellFactory(cb);
 
         tableView.getColumns().addAll(col1, col2, col3, col4, col5, col6, col7);
-        tableView.setItems(getPlaylists());
-        tableView.setItems(getPlaylists());
+        tableView.setItems(control.getLista());
 
+    }
+
+    public void comunicacaoControle(){
+        control.idProperty().add
     }
 
     public static ObservableList<Playlist> getPlaylists() {

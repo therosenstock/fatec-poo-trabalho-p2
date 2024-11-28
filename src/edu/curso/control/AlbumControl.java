@@ -63,7 +63,8 @@ public class AlbumControl {
         numeroFaixas.set(0);
     }
 
-    public void gravar(Album a) throws MusicaException{
+    public void gravar() throws MusicaException{
+        Album a = paraEntidade();
         if(a.getId() == 0){
             this.contador += 1;
             a.setId(this.contador);
@@ -71,17 +72,20 @@ public class AlbumControl {
         } else{
             albumDAO.atualizar(a);
         }
+        limparTudo();
         pesquisarTodos();
     }
 
     public void pesquisar() throws MusicaException{
+        List<Album> temp = albumDAO.pesquisarPorNome(titulo.get());
         lista.clear();
-        lista.addAll(albumDAO.pesquisarPorNome(titulo.get()));
+        lista.addAll(temp);
     }
 
     public void pesquisarTodos() throws MusicaException{
+        List<Album> temp = albumDAO.pesquisarPorNome("");
         lista.clear();
-        lista.addAll(albumDAO.pesquisarPorNome(""));
+        lista.addAll(temp);
     }
 
     public LongProperty idProperty() {
