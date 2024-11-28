@@ -10,5 +10,5 @@ public interface PlaylistDAO {
     void inserir(Playlist p) throws MusicaException;
     void atualizar(Playlist p) throws MusicaException;
     void remover(Playlist p) throws MusicaException;
-    List<Playlist> pesquisarPorTitulo(String titulo) throws MusicaException;
+    List<Playlist> pesquisarPorNome(String nome) throws MusicaException;
 }

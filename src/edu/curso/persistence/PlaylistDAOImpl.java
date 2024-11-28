@@ -76,12 +76,12 @@ public class PlaylistDAOImpl implements PlaylistDAO{
     }
 
     @Override
-    public List<Playlist> pesquisarPorTitulo(String titulo) throws MusicaException {
+    public List<Playlist> pesquisarPorNome(String nome) throws MusicaException {
         List<Playlist> lista = new ArrayList<>();
         try {
             String sql = "SELECT * FROM playlist WHERE nome LIKE ?";
             PreparedStatement stm = con.prepareStatement(sql);
-            stm.setString(1, "%" + titulo + "%");
+            stm.setString(1, "%" + nome + "%");
             ResultSet rs = stm.executeQuery();
             while (rs.next()) {
                 Playlist p = new Playlist();
